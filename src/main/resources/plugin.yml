@@ -1,0 +1,4 @@
+name: VPNKick
+version: ${project.version}
+main: net.groundmc.vpnkick.VpnKick
+description: Kicks players that who try to connect using VPNs or proxies
