@@ -27,7 +27,6 @@ public class JoinHandler implements Listener {
     @EventHandler
     public void kickVPN(PreLoginEvent event) {
         if (blockCache.getUnchecked(event.getConnection().getAddress().getHostString())) {
-            VpnKick.getInstance().getLogger().info("Blocking " + event.getConnection().getAddress());
             event.setCancelled(true);
             event.setCancelReason(new TextComponent("VPNs and proxies are not allowed!"));
         }
@@ -36,7 +35,6 @@ public class JoinHandler implements Listener {
     @EventHandler(priority = 127 /* Highest possible */)
     public void hidePing(ProxyPingEvent event) {
         if (blockCache.getUnchecked(event.getConnection().getAddress().getHostString())) {
-            VpnKick.getInstance().getLogger().info("Blocking " + event.getConnection().getAddress());
             event.setResponse(new ServerPing(
                     new ServerPing.Protocol("No VPN here!", event.getResponse().getVersion().getProtocol()),
                     new ServerPing.Players(0, 0, new ServerPing.PlayerInfo[]{new ServerPing.PlayerInfo("No VPN allowed!", "")}),
@@ -56,7 +54,6 @@ public class JoinHandler implements Listener {
                 connection.addRequestProperty("X-Key", VpnKick.getInstance().getConfig().getString("apikey"));
                 JsonParser parser = new JsonParser();
                 JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                VpnKick.getInstance().getLogger().info(element.toString());
                 return element.getAsJsonObject().get("block").getAsInt() == 1;
             } catch (IOException e) {
                 VpnKick.getInstance().getLogger().throwing("JoinHandler", "isBlocked", e);
