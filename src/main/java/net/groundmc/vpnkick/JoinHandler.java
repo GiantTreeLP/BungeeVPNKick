@@ -12,6 +12,7 @@ import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,13 +20,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.Executors;
 
-public class JoinHandler implements Listener {
+public final class JoinHandler implements Listener {
 
-    private LoadingCache<String, Boolean> blockCache = CacheBuilder.newBuilder()
+    @NotNull
+    private final LoadingCache<String, Boolean> blockCache = CacheBuilder.newBuilder()
             .maximumSize(1024).build(CacheLoader.asyncReloading(new BlockCacheLoader(), Executors.newCachedThreadPool()));
 
     @EventHandler
-    public void kickVPN(PreLoginEvent event) {
+    public final void kickVPN(@NotNull PreLoginEvent event) {
         if (blockCache.getUnchecked(event.getConnection().getAddress().getHostString())) {
             event.setCancelled(true);
             event.setCancelReason(new TextComponent("VPNs and proxies are not allowed!"));
@@ -33,7 +35,7 @@ public class JoinHandler implements Listener {
     }
 
     @EventHandler(priority = 127 /* Highest possible */)
-    public void hidePing(ProxyPingEvent event) {
+    public final void hidePing(@NotNull ProxyPingEvent event) {
         if (blockCache.getUnchecked(event.getConnection().getAddress().getHostString())) {
             event.setResponse(new ServerPing(
                     new ServerPing.Protocol("No VPN here!", event.getResponse().getVersion().getProtocol()),
@@ -44,25 +46,30 @@ public class JoinHandler implements Listener {
         }
     }
 
-    private static class BlockCacheLoader extends CacheLoader<String, Boolean> {
+    private static final class BlockCacheLoader extends CacheLoader<String, Boolean> {
 
         private static final String ENDPOINT = "http://v2.api.iphub.info/ip/";
 
-        private static boolean isBlocked(String address) {
+        private static boolean isBlocked(@NotNull String address) {
             try {
-                URLConnection connection = new URL(ENDPOINT + address).openConnection();
-                connection.addRequestProperty("X-Key", VpnKick.getInstance().getConfig().getString("apikey"));
-                JsonParser parser = new JsonParser();
-                JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                final URLConnection connection = new URL(ENDPOINT + address).openConnection();
+                if (VpnKick.getInstance().getConfig() != null) {
+                    connection.addRequestProperty("X-Key", VpnKick.getInstance().getConfig().getString("apikey"));
+                } else {
+                    return false;
+                }
+                final JsonParser parser = new JsonParser();
+                final JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), "UTF-8"));
                 return element.getAsJsonObject().get("block").getAsInt() == 1;
-            } catch (IOException e) {
+            } catch (IOException | NullPointerException e) {
                 VpnKick.getInstance().getLogger().throwing("JoinHandler", "isBlocked", e);
                 return false;
             }
         }
 
         @Override
-        public Boolean load(String key) {
+        @NotNull
+        public final Boolean load(@NotNull String key) {
             return isBlocked(key);
         }
     }
