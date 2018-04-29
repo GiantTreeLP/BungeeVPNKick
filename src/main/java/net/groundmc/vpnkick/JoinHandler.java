@@ -48,6 +48,7 @@ public final class JoinHandler implements Listener {
 
     private static final class BlockCacheLoader extends CacheLoader<String, Boolean> {
 
+        @NotNull
         private static final String ENDPOINT = "http://v2.api.iphub.info/ip/";
 
         private static boolean isBlocked(@NotNull String address) {

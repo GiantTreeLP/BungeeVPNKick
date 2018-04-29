@@ -1,6 +1,5 @@
 package net.groundmc.vpnkick;
 
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -31,12 +30,11 @@ public final class VpnKick extends Plugin {
 
         final File file = new File(getDataFolder(), "config.yml");
 
-
         if (!file.exists()) {
             try (final InputStream in = getResourceAsStream("config.yml")) {
                 Files.copy(in, file.toPath());
             } catch (IOException e) {
-                e.printStackTrace();
+                getLogger().throwing("VpnKick", "saveDefaultConfig", e);
             }
         }
     }
@@ -47,7 +45,7 @@ public final class VpnKick extends Plugin {
         saveDefaultConfig();
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
-            ProxyServer.getInstance().getPluginManager().registerListener(this, new JoinHandler());
+            getProxy().getPluginManager().registerListener(this, new JoinHandler());
         } catch (IOException e) {
             getLogger().throwing("VpnKick", "onLoad", e);
         }
