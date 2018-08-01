@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 
 public final class JoinHandler implements Listener {
@@ -60,7 +61,7 @@ public final class JoinHandler implements Listener {
                     return false;
                 }
                 final JsonParser parser = new JsonParser();
-                final JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                final JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
                 return element.getAsJsonObject().get("block").getAsInt() == 1;
             } catch (IOException | NullPointerException e) {
                 VpnKick.getInstance().getLogger().throwing("JoinHandler", "isBlocked", e);
