@@ -4,6 +4,9 @@ pipeline {
         maven 'Maven3'
         jdk 'Java10'
   }
+  options {
+    buildDiscarder logRotator(numToKeepStr: '10')
+  }
   stages {
     stage('Clean') {
       steps {
