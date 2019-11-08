@@ -23,9 +23,15 @@ import java.util.concurrent.Executors;
 
 public final class JoinHandler implements Listener {
 
+    private final VpnKick vpnKick;
+
     @NotNull
     private final LoadingCache<String, Boolean> blockCache = CacheBuilder.newBuilder()
             .maximumSize(1024).build(CacheLoader.asyncReloading(new BlockCacheLoader(), Executors.newCachedThreadPool()));
+
+    JoinHandler(VpnKick vpnKick) {
+        this.vpnKick = vpnKick;
+    }
 
     @EventHandler
     public final void kickVPN(@NotNull PreLoginEvent event) {
@@ -47,24 +53,25 @@ public final class JoinHandler implements Listener {
         }
     }
 
-    private static final class BlockCacheLoader extends CacheLoader<String, Boolean> {
+    private final class BlockCacheLoader extends CacheLoader<String, Boolean> {
 
         @NotNull
         private static final String ENDPOINT = "http://v2.api.iphub.info/ip/";
+        private final JsonParser parser = new JsonParser();
 
-        private static boolean isBlocked(@NotNull String address) {
+        private boolean isBlocked(@NotNull String address) {
             try {
                 final URLConnection connection = new URL(ENDPOINT + address).openConnection();
-                if (VpnKick.getInstance().getConfig() != null) {
-                    connection.addRequestProperty("X-Key", VpnKick.getInstance().getConfig().getString("apikey"));
+                if (vpnKick.getConfig() != null) {
+                    connection.addRequestProperty("X-Key", vpnKick.getConfig().getString("apikey"));
                 } else {
                     return false;
                 }
-                final JsonParser parser = new JsonParser();
+
                 final JsonElement element = parser.parse(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
                 return element.getAsJsonObject().get("block").getAsInt() == 1;
             } catch (IOException | NullPointerException e) {
-                VpnKick.getInstance().getLogger().throwing("JoinHandler", "isBlocked", e);
+                vpnKick.getLogger().throwing("JoinHandler", "isBlocked", e);
                 return false;
             }
         }

@@ -4,7 +4,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -14,14 +13,7 @@ import java.nio.file.Files;
 
 public final class VpnKick extends Plugin {
 
-    private static VpnKick instance;
-
     private Configuration config = null;
-
-    @NotNull
-    static VpnKick getInstance() {
-        return instance;
-    }
 
     private void saveDefaultConfig() {
         if (!getDataFolder().exists())
@@ -41,11 +33,10 @@ public final class VpnKick extends Plugin {
 
     @Override
     public final void onEnable() {
-        instance = this;
         saveDefaultConfig();
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
-            getProxy().getPluginManager().registerListener(this, new JoinHandler());
+            getProxy().getPluginManager().registerListener(this, new JoinHandler(this));
         } catch (IOException e) {
             getLogger().throwing("VpnKick", "onLoad", e);
         }
