@@ -33,7 +33,9 @@ pipeline {
     always {
       archiveArtifacts artifacts: 'target/*.jar', excludes: 'target/original*', fingerprint: true
       junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true
-      discordSend description: 'New plugin build\n@here', footer: 'Update', link: BUILD_URL, successful: currentBuild.resultIsBetterOrEqualTo('SUCCESS'), title: JOB_NAME, webhookURL: 'https://discordapp.com/api/webhooks/427588035274735628/o0a4dxYZLCfNqBUgGVSlU-qFVBwY-pLO6u9Wbj_fbXpwdPsdk2vC8awkwJ4clM2uczTf'
+      withCredentials([string(credentialsId: 'ground-discord-webhook-url', variable: 'url')]) {
+        discordSend description: 'New plugin build\n@here', footer: 'Update', link: BUILD_URL, successful: currentBuild.resultIsBetterOrEqualTo('SUCCESS'), title: JOB_NAME, webhookURL: url
+      }
     }
   }
 }
